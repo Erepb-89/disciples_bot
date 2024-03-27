@@ -3,8 +3,8 @@ from aiogram.filters import CommandStart, Command, or_f
 from aiogram.utils.formatting import as_list, as_marked_section, Bold
 
 from filters.chat_types import ChatTypeFilter
-from keyboards.reply import start_kb, del_kbd, start_kb2, test_kb
-from settings import EMPIRE_DESC, HORDES_DESC, LEGIONS_DESC, CLANS_DESC
+from keyboards.reply import del_kbd, start_kb2
+from common.settings import EMPIRE_DESC, HORDES_DESC, LEGIONS_DESC, CLANS_DESC
 
 user_private_router = Router()
 user_private_router.message.filter(ChatTypeFilter(['private']))
