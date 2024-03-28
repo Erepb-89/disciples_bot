@@ -61,7 +61,6 @@ async def game_cmd(message: types.Message):
     await message.answer(text.as_html())
 
 
-
 @user_private_router.message(or_f(Command('factions'),
                                   F.text.lower().contains('фракци')))
 async def factions_cmd(message: types.Message):
@@ -73,7 +72,7 @@ async def factions_cmd(message: types.Message):
 
 
 @user_private_router.message(or_f(Command('units'),
-                                  F.text.lower().contains('юнит')))
+                                  F.text.lower().contains('юниты')))
 async def units_cmd(message: types.Message):
     text = as_marked_section(
         Bold("Юниты:"),
@@ -91,7 +90,6 @@ async def units_cmd(message: types.Message):
                                   F.text.lower().contains('hello')))
 async def hello_cmd(message: types.Message):
     await message.answer('И тебе привет!')
-
 
 # @user_private_router.message(F.contact)
 # async def get_contact(message: types.Message):
