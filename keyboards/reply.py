@@ -66,8 +66,9 @@ start_kb2.add(
     KeyboardButton(text='Об игре'),
     KeyboardButton(text='Почитать описание игровых фракций'),
     KeyboardButton(text='Просмотр списка юнитов'),
+    KeyboardButton(text='Скриншоты'),
 )
-start_kb2.adjust(2, 2)
+start_kb2.adjust(2, 2, 1)
 
 test_kb = ReplyKeyboardMarkup(
     keyboard=[

@@ -1,27 +1,55 @@
+import os
+
 from aiogram import types, Router, F
 from aiogram.filters import CommandStart, Command, or_f
+from aiogram.types import FSInputFile
 from aiogram.utils.formatting import as_list, as_marked_section, Bold
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from database.orm_query import orm_get_units
 from filters.chat_types import ChatTypeFilter
-from keyboards.reply import del_kbd, start_kb2
+from keyboards.reply import del_kbd, start_kb2, get_keyboard
 from common.settings import EMPIRE_DESC, HORDES_DESC, LEGIONS_DESC, CLANS_DESC
 
 user_private_router = Router()
 user_private_router.message.filter(ChatTypeFilter(['private']))
 
+PARENT_DIR = os.getcwd()
+
 
 @user_private_router.message(CommandStart())
 async def start_cmd(message: types.Message):
-    await message.answer('Привет! Я виртуальных помощник',
-                         reply_markup=start_kb2.as_markup(
-                             resize_keyboard=True,
-                             input_field_placeholder='Что вас интересует?'))
+    START_KB = get_keyboard(
+        "О боте",
+        "Об игре",
+        "Почитать описание игровых фракций",
+        "Просмотр списка юнитов",
+        "Скриншоты",
+        placeholder="Что вас интересует?",
+        sizes=(2, 2, 1),
+    )
+    await message.answer('Привет! Я виртуальных помощник', reply_markup=START_KB)
 
 
 @user_private_router.message(or_f(Command('about'),
                                   F.text.lower().contains('бот')))
 async def about_cmd(message: types.Message):
-    await message.answer('Бот для просмотра юнитов игры Disciples Mobile')
+    await message.answer('Бот для просмотра информации об игре Disciples Mobile. '
+                         'Здесь Вы можете просмотреть игровые скриншоты, '
+                         'а также харакктеристики юнитов.')
+
+
+@user_private_router.message(or_f(Command('screenshots'),
+                                  F.text.lower().contains('скриншот')))
+async def screenshots_cmd(message: types.Message):
+    await message.answer('Вот несколько скриншотов из игры:', reply_markup=del_kbd)
+
+    images_path = os.path.join(PARENT_DIR, 'screenshots/')
+    for image in os.listdir(images_path):
+        new_path = os.path.join(images_path, image)
+        image = FSInputFile(new_path)
+
+        await message.answer_photo(image)
 
 
 @user_private_router.message(or_f(Command('game'),
@@ -30,7 +58,7 @@ async def game_cmd(message: types.Message):
     text = as_list(
         as_marked_section(
             Bold('Реализовано:'),
-            'Создана база существ (sqlite) с сайта Disciples Wiki с помощью scrapy, urllib, xpath, с последующим переходом на postgres (192 активных существа с разными характеристиками и способностями, разделенные условно на 4 категории: Стрелки, Маги, Бойцы, Воины поддержки).',
+            'Создана база существ (sqlite) с помощью парсинга с сайта Disciples Wiki с помощью scrapy, urllib, xpath, с последующим переходом на postgresql (192 активных существа с разными характеристиками и способностями, разделенные условно на 4 категории: Стрелки, Маги, Бойцы, Воины поддержки).',
             'Создана фабрика юнитов при найме (на основе паттерна Абстрактная фабрика) для каждой из 4 фракций.',
             'Создан основной движок игры, методы найма, увольнения, перестановки юнитов внутри группы с изменением в БД (взаимодействие с базой с помощью sqlalchemy).',
             'Создано главное окно, окно найма юнитов, окно постройки в Столице с выбором ветвей развития юнитов, покупкой строений, с изменением в БД (применяются QtDesigner, PyQT, диалоговые окна, рекурсия, графы).',
@@ -72,18 +100,47 @@ async def factions_cmd(message: types.Message):
 
 
 @user_private_router.message(or_f(Command('units'),
-                                  F.text.lower().contains('юниты')))
-async def units_cmd(message: types.Message):
-    text = as_marked_section(
-        Bold("Юниты:"),
-        "Одержимый",
-        "Сквайр",
-        "Боец",
-        "Гном",
-        marker="✅ ",
-    )
-    await message.answer(text.as_html(), reply_markup=del_kbd)
-    # await message.answer('Юниты:', reply_markup=del_kbd)
+                                  F.text.lower().contains('юнитов')))
+async def units_cmd(message: types.Message, session: AsyncSession):
+    portraits_path = os.path.join(PARENT_DIR, 'images/portraits')
+
+    for unit in await orm_get_units(session):
+        image_path = os.path.join(portraits_path, f'{unit.name}.gif')
+        portrait = FSInputFile(image_path)
+
+        await message.answer_photo(
+            portrait,
+            caption=f"<b>{unit.name}</b>\n"
+                    f"{unit.desc}\n"
+                    f"Уровень: {unit.level}\n"
+                    f"Размер: {unit.size}\n"
+                    f"Стоимость: {unit.price}\n"
+                    f"Опыт: {unit.exp}\n"
+                    f"Опыт за убийство: {unit.exp_per_kill}\n"
+                    f"Здоровье: {unit.health}\n"
+                    f"Броня: {unit.armor}\n"
+                    f"Иммунитет: {unit.immune}\n"
+                    f"Защита: {unit.ward}\n"
+                    f"Атака: {unit.attack_type}\n"
+                    f"Шанс попадания: {unit.attack_chance}\n"
+                    f"Урон: {unit.attack_dmg}\n"
+                    f"Периодический урон: {unit.dot_dmg}\n"
+                    f"Источник атаки: {unit.attack_source}\n"
+                    f"Инициатива: {unit.attack_ini}\n"
+                    f"Радиус: {unit.attack_radius}\n"
+                    f"Цели: {unit.attack_purpose}\n"
+                    f"Атакует дважды: {unit.attack_twice}\n"
+                    f"Предыдущая форма: {unit.prev_level}\n"
+            ,
+            # reply_markup=get_callback_btns(
+            #     btns={
+            #         "Удалить": f"delete_{unit.id}",
+            #         "Изменить": f"change_{unit.id}",
+            #     }
+            # ),
+        )
+
+    await message.answer("ОК, вот список юнитов ⏫")
 
 
 @user_private_router.message(or_f(F.text.lower().contains('ривет'),
