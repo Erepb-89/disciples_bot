@@ -50,7 +50,7 @@ start_kb = ReplyKeyboardMarkup(
             KeyboardButton(text='Об игре'),
         ],
         [
-            KeyboardButton(text='Почитать описание игровых фракций'),
+            KeyboardButton(text='Почитать описание фракций'),
             KeyboardButton(text='Просмотр списка юнитов'),
         ],
     ],
@@ -64,7 +64,7 @@ start_kb2 = ReplyKeyboardBuilder()
 start_kb2.add(
     KeyboardButton(text='О боте'),
     KeyboardButton(text='Об игре'),
-    KeyboardButton(text='Почитать описание игровых фракций'),
+    KeyboardButton(text='Почитать описание фракций'),
     KeyboardButton(text='Просмотр списка юнитов'),
     KeyboardButton(text='Скриншоты'),
 )

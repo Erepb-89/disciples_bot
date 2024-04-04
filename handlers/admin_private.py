@@ -10,7 +10,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.orm_query import orm_get_units
 from filters.chat_types import ChatTypeFilter, IsAdmin
-from keyboards.inline import get_callback_btns
 from keyboards.reply import get_keyboard
 
 admin_router = Router()
