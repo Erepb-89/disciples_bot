@@ -22,7 +22,7 @@ async def start_cmd(message: types.Message):
     START_KB = get_keyboard(
         "О боте",
         "Об игре",
-        "Почитать описание игровых фракций",
+        "Почитать описание фракций",
         "Просмотр списка юнитов",
         "Скриншоты",
         placeholder="Что вас интересует?",
@@ -132,12 +132,6 @@ async def units_cmd(message: types.Message, session: AsyncSession):
                     f"Атакует дважды: {unit.attack_twice}\n"
                     f"Предыдущая форма: {unit.prev_level}\n"
             ,
-            # reply_markup=get_callback_btns(
-            #     btns={
-            #         "Удалить": f"delete_{unit.id}",
-            #         "Изменить": f"change_{unit.id}",
-            #     }
-            # ),
         )
 
     await message.answer("ОК, вот список юнитов ⏫")
