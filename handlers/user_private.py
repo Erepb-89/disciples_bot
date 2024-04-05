@@ -8,8 +8,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.orm_query import orm_get_units
 from filters.chat_types import ChatTypeFilter
-from keyboards.reply import del_kbd, start_kb2, get_keyboard
-from common.settings import EMPIRE_DESC, HORDES_DESC, LEGIONS_DESC, CLANS_DESC
+from handlers.menu_processing import get_menu_content
+from keyboards.inline import MenuCallBack
+from keyboards.reply import del_kbd
+from common.settings import EMPIRE_DESC_SHORT, \
+    HORDES_DESC_SHORT, LEGIONS_DESC_SHORT, CLANS_DESC_SHORT
 
 user_private_router = Router()
 user_private_router.message.filter(ChatTypeFilter(['private']))
@@ -18,17 +21,36 @@ PARENT_DIR = os.getcwd()
 
 
 @user_private_router.message(CommandStart())
-async def start_cmd(message: types.Message):
-    START_KB = get_keyboard(
-        "О боте",
-        "Об игре",
-        "Почитать описание фракций",
-        "Просмотр списка юнитов",
-        "Скриншоты",
-        placeholder="Что вас интересует?",
-        sizes=(2, 2, 1),
+async def start_cmd(message: types.Message, session: AsyncSession):
+    media, reply_markup = await get_menu_content(session, level_menu=0, menu_name="main")
+
+    await message.answer_photo(media.media, caption=media.caption, reply_markup=reply_markup)
+
+
+@user_private_router.callback_query(MenuCallBack.filter())
+async def about_menu(callback: types.CallbackQuery, callback_data: MenuCallBack, session: AsyncSession):
+    media, reply_markup = await get_menu_content(
+        session,
+        level_menu=callback_data.level_menu,
+        menu_name=callback_data.menu_name,
+        page=callback_data.page,
     )
-    await message.answer('Привет! Я виртуальных помощник', reply_markup=START_KB)
+
+    await callback.message.edit_media(media=media, reply_markup=reply_markup)
+    await callback.answer()
+
+
+@user_private_router.callback_query(MenuCallBack.filter())
+async def game_menu(callback: types.CallbackQuery, callback_data: MenuCallBack, session: AsyncSession):
+    media, reply_markup = await get_menu_content(
+        session,
+        level_menu=callback_data.level_menu,
+        menu_name=callback_data.menu_name,
+        page=callback_data.page,
+    )
+
+    await callback.message.edit_media(media=media, reply_markup=reply_markup)
+    await callback.answer()
 
 
 @user_private_router.message(or_f(Command('about'),
@@ -36,7 +58,7 @@ async def start_cmd(message: types.Message):
 async def about_cmd(message: types.Message):
     await message.answer('Бот для просмотра информации об игре Disciples Mobile. '
                          'Здесь Вы можете просмотреть игровые скриншоты, '
-                         'а также харакктеристики юнитов.')
+                         'а также характеристики юнитов.')
 
 
 @user_private_router.message(or_f(Command('screenshots'),
@@ -93,10 +115,10 @@ async def game_cmd(message: types.Message):
                                   F.text.lower().contains('фракци')))
 async def factions_cmd(message: types.Message):
     await message.answer(f'<b>Список игровых фракций:</b>\n'
-                         f'<b>Империя:</b>\n {EMPIRE_DESC}\n\n'
-                         f'<b>Орды Нежити:</b>\n {HORDES_DESC}\n\n'
-                         f'<b>Легионы Проклятых:</b>\n {LEGIONS_DESC}\n\n'
-                         f'<b>Горные Кланы:</b>\n {CLANS_DESC}\n\n')
+                         f'<b>Империя:</b>\n{EMPIRE_DESC_SHORT}\n\n'
+                         f'<b>Орды Нежити:</b>\n{HORDES_DESC_SHORT}\n\n'
+                         f'<b>Легионы Проклятых:</b>\n{LEGIONS_DESC_SHORT}\n\n'
+                         f'<b>Горные Кланы:</b>\n{CLANS_DESC_SHORT}\n\n')
 
 
 @user_private_router.message(or_f(Command('units'),
