@@ -22,13 +22,18 @@ PARENT_DIR = os.getcwd()
 
 @user_private_router.message(CommandStart())
 async def start_cmd(message: types.Message, session: AsyncSession):
-    media, reply_markup = await get_menu_content(session, level_menu=0, menu_name="main")
+    media, reply_markup = await get_menu_content(
+        session, level_menu=0, menu_name="main")
 
-    await message.answer_photo(media.media, caption=media.caption, reply_markup=reply_markup)
+    await message.answer_photo(media.media,
+                               caption=media.caption,
+                               reply_markup=reply_markup)
 
 
 @user_private_router.callback_query(MenuCallBack.filter())
-async def about_menu(callback: types.CallbackQuery, callback_data: MenuCallBack, session: AsyncSession):
+async def about_menu(callback: types.CallbackQuery,
+                     callback_data: MenuCallBack,
+                     session: AsyncSession):
     media, reply_markup = await get_menu_content(
         session,
         level_menu=callback_data.level_menu,
@@ -36,12 +41,15 @@ async def about_menu(callback: types.CallbackQuery, callback_data: MenuCallBack,
         page=callback_data.page,
     )
 
-    await callback.message.edit_media(media=media, reply_markup=reply_markup)
+    await callback.message.edit_media(media=media,
+                                      reply_markup=reply_markup)
     await callback.answer()
 
 
 @user_private_router.callback_query(MenuCallBack.filter())
-async def game_menu(callback: types.CallbackQuery, callback_data: MenuCallBack, session: AsyncSession):
+async def game_menu(callback: types.CallbackQuery,
+                    callback_data: MenuCallBack,
+                    session: AsyncSession):
     media, reply_markup = await get_menu_content(
         session,
         level_menu=callback_data.level_menu,
@@ -64,7 +72,8 @@ async def about_cmd(message: types.Message):
 @user_private_router.message(or_f(Command('screenshots'),
                                   F.text.lower().contains('скриншот')))
 async def screenshots_cmd(message: types.Message):
-    await message.answer('Вот несколько скриншотов из игры:', reply_markup=del_kbd)
+    await message.answer('Вот несколько скриншотов из игры:',
+                         reply_markup=del_kbd)
 
     images_path = os.path.join(PARENT_DIR, 'screenshots/')
     for image in os.listdir(images_path):

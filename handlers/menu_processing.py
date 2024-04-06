@@ -13,6 +13,7 @@ from database.orm_query import (
 from keyboards.inline import (
     get_units_btns,
     get_user_main_btns,
+    # get_screenshots_btns,
 )
 
 from utils.paginator import Paginator
@@ -32,11 +33,8 @@ async def main_menu(level_menu):
 
 def pages(paginator: Paginator):
     btns = {}
-    if paginator.has_previous():
-        btns["◀ Пред."] = "previous"
-
-    if paginator.has_next():
-        btns["След. ▶"] = "next"
+    btns["◀ Пред."] = "previous"
+    btns["След. ▶"] = "next"
 
     return btns
 
@@ -154,6 +152,31 @@ async def units(session, level_menu, page):
     return image, kbds
 
 
+# async def screenshots(session, level_menu, page):
+#     screens = os.listdir(os.path.join(PARENT_DIR, 'screenshots'))
+#
+#     paginator = Paginator(screens, page=page)
+#     screenshot = paginator.get_page()[0]
+#
+#     # portraits_path = os.path.join(PARENT_DIR, 'images/portraits')
+#     # image_path = os.path.join(portraits_path, f'{unit.name}.gif')
+#
+#     image = InputMediaPhoto(
+#         media=FSInputFile(screenshot),
+#         caption='1'
+#     )
+#
+#     pagination_btns = pages(paginator)
+#
+#     kbds = get_screenshots_btns(
+#         level_menu=level_menu,
+#         page=page,
+#         pagination_btns=pagination_btns,
+#     )
+#
+#     return image, kbds
+
+
 async def get_menu_content(
         session: AsyncSession,
         level_menu: int,
@@ -170,3 +193,5 @@ async def get_menu_content(
         return await factions(level_menu)
     elif level_menu == 1:
         return await units(session, level_menu, page)
+    # elif level_menu == 2:
+    #     return await screenshots(session, level_menu, page)

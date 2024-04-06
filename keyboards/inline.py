@@ -31,6 +31,10 @@ def get_user_main_btns(*, level_menu: int, sizes: Tuple[int] = (2,)):
             keyboard.add(InlineKeyboardButton(text=text,
                                               callback_data=MenuCallBack(level_menu=0,
                                                                          menu_name=menu_name).pack()))
+        # elif menu_name == 'screenshots':
+        #     keyboard.add(InlineKeyboardButton(text=text,
+        #                                       callback_data=MenuCallBack(level_menu=2,
+        #                                                                  menu_name=menu_name).pack()))
         else:
             keyboard.add(InlineKeyboardButton(text=text,
                                               callback_data=MenuCallBack(level_menu=level_menu,
@@ -75,3 +79,37 @@ def get_units_btns(
                                                 page=page - 1).pack()))
 
     return keyboard.row(*row).as_markup()
+
+
+# def get_screenshots_btns(
+#         *,
+#         level_menu: int,
+#         page: int,
+#         pagination_btns: dict,
+#         sizes: Tuple[int] = (2, 1)
+# ):
+#     keyboard = InlineKeyboardBuilder()
+#
+#     keyboard.add(InlineKeyboardButton(text='Назад',
+#                                       callback_data=MenuCallBack(level_menu=0,
+#                                                                  menu_name='main').pack()))
+#
+#     keyboard.adjust(*sizes)
+#
+#     row = []
+#     for text, menu_name in pagination_btns.items():
+#         if menu_name == "next":
+#             row.append(InlineKeyboardButton(text=text,
+#                                             callback_data=MenuCallBack(
+#                                                 level_menu=level_menu,
+#                                                 menu_name=menu_name,
+#                                                 page=page + 1).pack()))
+#
+#         elif menu_name == "previous":
+#             row.append(InlineKeyboardButton(text=text,
+#                                             callback_data=MenuCallBack(
+#                                                 level_menu=level_menu,
+#                                                 menu_name=menu_name,
+#                                                 page=page - 1).pack()))
+#
+#     return keyboard.row(*row).as_markup()
