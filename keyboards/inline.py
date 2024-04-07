@@ -21,15 +21,16 @@ def get_user_main_btns(*, level_menu: int, sizes: Tuple[int] = (2,)):
         "Об игре 🎮": "game",
         "О фракциях 🧩": "factions",
         # "Скриншоты 👓": "screenshots",
+        "Категории 🧻": "catalog",
     }
     for text, menu_name in btns.items():
         if menu_name == 'units':
             keyboard.add(InlineKeyboardButton(text=text,
-                                              callback_data=MenuCallBack(level_menu=1,
+                                              callback_data=MenuCallBack(level_menu=2,
                                                                          menu_name=menu_name).pack()))
-        elif menu_name == 'about':
+        elif menu_name == 'catalog':
             keyboard.add(InlineKeyboardButton(text=text,
-                                              callback_data=MenuCallBack(level_menu=0,
+                                              callback_data=MenuCallBack(level_menu=1,
                                                                          menu_name=menu_name).pack()))
         else:
             keyboard.add(InlineKeyboardButton(text=text,
@@ -75,3 +76,22 @@ def get_units_btns(
                                                 page=page - 1).pack()))
 
     return keyboard.row(*row).as_markup()
+
+
+def get_user_catalog_btns(*, level_menu: int, unit_levels: list, sizes: Tuple[int] = (2,)):
+    keyboard = InlineKeyboardBuilder()
+
+    keyboard.add(InlineKeyboardButton(text='Назад',
+                                      callback_data=MenuCallBack(level_menu=level_menu - 1,
+                                                                 menu_name='main').pack()))
+    keyboard.add(InlineKeyboardButton(text='Избранное ⭐',
+                                      callback_data=MenuCallBack(level_menu=3,
+                                                                 menu_name='favourites').pack()))
+
+    for level in unit_levels:
+        keyboard.add(InlineKeyboardButton(text=level.level,
+                                          callback_data=MenuCallBack(level_menu=level_menu + 1,
+                                                                     menu_name=level.level,
+                                                                     level_unit=level.id).pack()))
+
+    return keyboard.adjust(*sizes).as_markup()

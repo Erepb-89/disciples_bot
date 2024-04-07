@@ -1,5 +1,4 @@
-from aiogram.utils.formatting import Text
-from sqlalchemy import Integer, String
+from sqlalchemy import Integer, String, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -9,13 +8,20 @@ class Base(DeclarativeBase):
     pass
 
 
-# class Banner(Base):
-#     __tablename__ = 'banner'
-#
-#     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-#     name: Mapped[str] = mapped_column(String(15), unique=True)
-#     image: Mapped[str] = mapped_column(String(150), nullable=True)
-#     description: Mapped[str] = mapped_column(Text, nullable=True)
+class UnitLevel(Base):
+    __tablename__ = 'level_unit'
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    level: Mapped[str] = mapped_column(String(10), nullable=False)
+
+
+class Banner(Base):
+    __tablename__ = 'banner'
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(15), unique=True)
+    image: Mapped[str] = mapped_column(String(150), nullable=True)
+    description: Mapped[str] = mapped_column(Text, nullable=True)
 
 
 class Units(Base):
