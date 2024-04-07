@@ -59,7 +59,7 @@ async def starring_at_unit(message: types.Message, session: AsyncSession):
 
         await message.answer_photo(
             portrait,
-            caption=f"<b>{unit.name}</b>\n"
+            caption=f"<b>{unit.name}</b>\n\n"
                     f"{unit.desc}\n"
                     f"Уровень: {unit.level}\n"
                     f"Размер: {unit.size}\n"

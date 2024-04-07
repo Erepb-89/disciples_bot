@@ -45,20 +45,23 @@ async def about_menu(callback: types.CallbackQuery,
                                       reply_markup=reply_markup)
     await callback.answer()
 
-
-@user_private_router.callback_query(MenuCallBack.filter())
-async def game_menu(callback: types.CallbackQuery,
-                    callback_data: MenuCallBack,
-                    session: AsyncSession):
-    media, reply_markup = await get_menu_content(
-        session,
-        level_menu=callback_data.level_menu,
-        menu_name=callback_data.menu_name,
-        page=callback_data.page,
-    )
-
-    await callback.message.edit_media(media=media, reply_markup=reply_markup)
-    await callback.answer()
+# @user_private_router.callback_query(MenuCallBack.filter())
+# async def user_menu(callback: types.CallbackQuery,
+#                     callback_data: MenuCallBack,
+#                     session: AsyncSession):
+#     # if callback_data.menu_name == "add_to_fav":
+#     #     await add_to_fav(callback, callback_data, session)
+#     #     return
+#
+#     media, reply_markup = await get_menu_content(
+#         session,
+#         level_menu=callback_data.level_menu,
+#         menu_name=callback_data.menu_name,
+#         page=callback_data.page,
+#     )
+#
+#     await callback.message.edit_media(media=media, reply_markup=reply_markup)
+#     await callback.answer()
 
 
 @user_private_router.message(or_f(Command('about'),
