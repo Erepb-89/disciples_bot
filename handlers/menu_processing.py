@@ -20,25 +20,15 @@ from utils.paginator import Paginator
 PARENT_DIR = os.getcwd()
 
 
-async def main_menu(level_menu):
+async def main_menu(session, level_menu, menu_name):
+    banner = await orm_get_banner(session, menu_name)
     image = InputMediaPhoto(media=FSInputFile(
-        os.path.join(os.getcwd(), f'screenshots/Represent.png')),
-        caption='Главное меню')
+        os.path.join(os.getcwd(), f'screenshots/{banner.image}')),
+        caption=banner.description)
 
     kbds = get_user_main_btns(level_menu=level_menu)
 
     return image, kbds
-
-
-# async def main_menu(session, level_menu, menu_name):
-#     banner = await orm_get_banner(session, menu_name)
-#     image = InputMediaPhoto(media=FSInputFile(
-#         os.path.join(os.getcwd(), f'screenshots/{banner.image}')),
-#         caption=banner.description)
-#
-#     kbds = get_user_main_btns(level_menu=level_menu)
-#
-#     return image, kbds
 
 
 def pages(paginator: Paginator):
@@ -49,81 +39,16 @@ def pages(paginator: Paginator):
     return btns
 
 
-async def about(level_menu):
-    image = InputMediaPhoto(media=FSInputFile(
-        os.path.join(os.getcwd(), 'screenshots/Represent_02.png')),
-        caption='Бот для просмотра информации об игре Disciples Mobile. '
-                'Здесь Вы можете просмотреть игровые скриншоты, '
-                'а также характеристики юнитов.')
-
-    kbds = get_user_main_btns(level_menu=level_menu)
-
-    return image, kbds
-
-
-async def factions(level_menu):
-    image = InputMediaPhoto(media=FSInputFile(
-        os.path.join(os.getcwd(), 'screenshots/Represent_05.png')),
-        caption=f'<b>Список игровых фракций:</b>\n'
-                f'<b>Империя:</b>\n{EMPIRE_DESC_SHORT}\n\n'
-                f'<b>Орды Нежити:</b>\n{HORDES_DESC_SHORT}\n\n'
-                f'<b>Легионы Проклятых:</b>\n{LEGIONS_DESC_SHORT}\n\n'
-                f'<b>Горные Кланы:</b>\n{CLANS_DESC_SHORT}\n\n')
-
-    kbds = get_user_main_btns(level_menu=level_menu)
-
-    return image, kbds
-
-
-async def game(level_menu):
-    text = as_list(
-        as_marked_section(
-            Bold('Реализовано:'),
-            'Создана база существ (sqlite)',
-            'Создана фабрика юнитов',
-            'Создан основной движок игры',
-            'Создано главное окно',
-            'Добавление и выбор пользователя.',
-            'Получение уровней существами',
-            'Создан движок битвы',
-            'Парсинг GIF-анимаций',
-            'Создано окно битвы',
-            'Логирование',
-            'Добавлены Герои',
-            'Созданы кампании',
-            'Добавлены игровые сессии',
-            'Автобой',
-            'Проект доведен до стадии MVP',
-            marker="✅ ",
-        ),
-        as_marked_section(
-            Bold("Не реализовано:"),
-            'Протестирована часть модулей (unittest).',
-            marker="❌ "
-        ),
-        sep="\n---------------------------\n",
-    ).as_html()
-
-    image = InputMediaPhoto(media=FSInputFile(
-        os.path.join(os.getcwd(), 'screenshots/Represent_03.png')),
-        caption=text)
-
-    kbds = get_user_main_btns(level_menu=level_menu)
-
-    return image, kbds
-
-
 async def units(session, level_menu, page):
-    units = await orm_get_units(session)
+    units_list = await orm_get_units(session)
 
-    paginator = Paginator(units, page=page)
+    paginator = Paginator(units_list, page=page)
     unit = paginator.get_page()[0]
 
     portraits_path = os.path.join(PARENT_DIR, 'images/portraits')
     image_path = os.path.join(portraits_path, f'{unit.name}.gif')
 
     image = InputMediaPhoto(
-        # media=unit.image,
         media=FSInputFile(image_path),
         caption=f"<b>{unit.name}</b>\n"
                 f"{unit.desc}\n"
@@ -145,8 +70,7 @@ async def units(session, level_menu, page):
                 f"Радиус: {unit.attack_radius}\n"
                 f"Цели: {unit.attack_purpose}\n"
                 f"Атакует дважды: {unit.attack_twice}\n"
-                f"Предыдущая форма: {unit.prev_level}\n"
-        ,
+                f"Предыдущая форма: {unit.prev_level}\n",
     )
 
     pagination_btns = pages(paginator)
@@ -164,16 +88,14 @@ async def units(session, level_menu, page):
 
 async def catalog(session, level_menu, menu_name):
     banner = await orm_get_banner(session, menu_name)
-    # image = InputMediaPhoto(media=banner.image, caption=banner.description)
-
-    # image = InputMediaPhoto(media=FSInputFile(
-    #     os.path.join(os.getcwd(), 'screenshots/Represent_04.png')))
 
     image = InputMediaPhoto(media=FSInputFile(
         os.path.join(os.getcwd(), f'screenshots/{banner.image}')))
 
     unit_levels = await orm_get_unit_levels(session)
-    kbds = get_user_catalog_btns(level_menu=level_menu, unit_levels=unit_levels)
+    kbds = get_user_catalog_btns(
+        level_menu=level_menu,
+        unit_levels=unit_levels)
 
     return image, kbds
 
@@ -184,17 +106,9 @@ async def get_menu_content(
         menu_name: str,
         page: Optional[int] = None,
 ):
-    # if level_menu == 0 and menu_name == 'main':
-    #     return await main_menu(session, level_menu, menu_name)
-    if level_menu == 0 and menu_name == 'main':
-        return await main_menu(level_menu)
-    elif level_menu == 0 and menu_name == 'about':
-        return await about(level_menu)
-    elif level_menu == 0 and menu_name == 'game':
-        return await game(level_menu)
-    elif level_menu == 0 and menu_name == 'factions':
-        return await factions(level_menu)
-    elif level_menu == 1:
+    if level_menu == 0:
+        return await main_menu(session, level_menu, menu_name)
+    if level_menu == 1:
         return await catalog(session, level_menu, menu_name)
-    elif level_menu == 2:
+    if level_menu == 2:
         return await units(session, level_menu, page)
