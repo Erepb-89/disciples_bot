@@ -2,13 +2,12 @@ import os
 from typing import Optional
 
 from aiogram.types import InputMediaPhoto, FSInputFile
-from aiogram.utils.formatting import as_list, as_marked_section, Bold
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from common.settings import EMPIRE_DESC_SHORT, \
-    LEGIONS_DESC_SHORT, CLANS_DESC_SHORT, HORDES_DESC_SHORT
 from database.orm_query import (
-    orm_get_units, orm_get_unit_levels, orm_get_banner,
+    orm_get_units,
+    orm_get_unit_levels,
+    orm_get_banner,
 )
 from keyboards.inline import (
     get_units_btns,
@@ -31,7 +30,7 @@ async def main_menu(session, level_menu, menu_name):
     return image, kbds
 
 
-def pages(paginator: Paginator):
+def pages_all(paginator: Paginator):
     btns = {}
     btns["◀ Пред."] = "previous"
     btns["След. ▶"] = "next"
@@ -39,8 +38,19 @@ def pages(paginator: Paginator):
     return btns
 
 
-async def units(session, level_menu, page):
-    units_list = await orm_get_units(session)
+def pages(paginator: Paginator):
+    btns = {}
+    if paginator.has_previous():
+        btns["◀ Пред."] = "previous"
+
+    if paginator.has_next():
+        btns["След. ▶"] = "next"
+
+    return btns
+
+
+async def units(session, level_menu, page, level_unit):
+    units_list = await orm_get_units(session, level_id=level_unit)
 
     paginator = Paginator(units_list, page=page)
     unit = paginator.get_page()[0]
@@ -50,7 +60,7 @@ async def units(session, level_menu, page):
 
     image = InputMediaPhoto(
         media=FSInputFile(image_path),
-        caption=f"<b>{unit.name}</b>\n"
+        caption=f"<b>{unit.name}</b>\n\n"
                 f"{unit.desc}\n"
                 f"Уровень: {unit.level}\n"
                 f"Размер: {unit.size}\n"
@@ -105,10 +115,11 @@ async def get_menu_content(
         level_menu: int,
         menu_name: str,
         page: Optional[int] = None,
+        level_unit: int = None
 ):
     if level_menu == 0:
         return await main_menu(session, level_menu, menu_name)
     if level_menu == 1:
         return await catalog(session, level_menu, menu_name)
     if level_menu == 2:
-        return await units(session, level_menu, page)
+        return await units(session, level_menu, page, level_unit)

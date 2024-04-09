@@ -16,7 +16,7 @@ class MenuCallBack(CallbackData, prefix="menu"):
 def get_user_main_btns(*, level_menu: int, sizes: Tuple[int] = (2,)):
     keyboard = InlineKeyboardBuilder()
     btns = {
-        "Юниты 😈": "units",
+        "Все юниты 😈": "units",
         "О боте ℹ️": "about",
         "Об игре 🎮": "game",
         "О фракциях 🧩": "factions",
@@ -52,7 +52,7 @@ def get_units_btns(
     keyboard = InlineKeyboardBuilder()
 
     keyboard.add(InlineKeyboardButton(text='Назад',
-                                      callback_data=MenuCallBack(level_menu=0,
+                                      callback_data=MenuCallBack(level_menu=level_menu - 1,
                                                                  menu_name='main').pack()))
 
     keyboard.adjust(*sizes)
