@@ -14,18 +14,23 @@ class Paginator:
         self.pages = math.ceil(self.len / self.per_page)
 
     def __get_slice(self):
-        if self.page != 0:
-            start = (self.page - 1) * self.per_page
-            stop = start + self.per_page
-            return self.array[start:stop]
-        else:
-            start = self.pages - 1
-            stop = self.pages
-            return self.array[start:stop]
+        start = (self.page - 1) * self.per_page
+        stop = start + self.per_page
+        return self.array[start:stop]
 
     def get_page(self):
         page_items = self.__get_slice()
         return page_items
+
+    def has_next(self):
+        if self.page < self.pages:
+            return self.page + 1
+        return False
+
+    def has_previous(self):
+        if self.page > 1:
+            return self.page - 1
+        return False
 
     def get_next(self):
         return self.page + 1 if self.page != self.pages else 1

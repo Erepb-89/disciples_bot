@@ -4,8 +4,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from database.models import Units, UnitLevel, Banner
 
 
-async def orm_get_units(session: AsyncSession):
-    query = select(Units)
+async def orm_get_units(session: AsyncSession, level_id):
+    if level_id is not None:
+        query = select(Units).where(Units.level == int(level_id))
+    else:
+        query = select(Units)
     result = await session.scalars(query)
     return result.all()
 
