@@ -8,10 +8,14 @@ from database.orm_query import (
     orm_get_units,
     orm_get_unit_levels,
     orm_get_banner,
+    orm_get_user_favs,
+    orm_delete_from_favs,
 )
 from keyboards.inline import (
     get_units_btns,
-    get_user_main_btns, get_user_catalog_btns,
+    get_user_main_btns,
+    get_user_catalog_btns,
+    get_user_favourites,
 )
 
 from utils.paginator import Paginator
@@ -110,12 +114,80 @@ async def catalog(session, level_menu, menu_name):
     return image, kbds
 
 
+async def favourites(session, level_menu, menu_name, page, user_id, unit_id):
+    if menu_name == "delete":
+        await orm_delete_from_favs(session, user_id, unit_id)
+        if page > 1:
+            page -= 1
+
+    favs = await orm_get_user_favs(session, user_id)
+
+    if not favs:
+        banner = await orm_get_banner(session, "favourites")
+        image = InputMediaPhoto(media=FSInputFile(
+            os.path.join(os.getcwd(), f'screenshots/{banner.image}')),
+            caption=banner.description)
+
+        kbds = get_user_favourites(
+            level_menu=level_menu,
+            page=None,
+            pagination_btns=None,
+            unit_id=None,
+        )
+
+    else:
+        paginator = Paginator(favs, page=page)
+
+        fav = paginator.get_page()[0]
+
+        portraits_path = os.path.join(PARENT_DIR, 'images/portraits')
+        image_path = os.path.join(portraits_path, f'{fav.unit.name}.gif')
+
+        image = InputMediaPhoto(
+            media=FSInputFile(image_path),
+            caption=f"<b>{fav.unit.name}</b>\n\n"
+                    f"{fav.unit.desc}\n"
+                    f"Уровень: {fav.unit.level}\n"
+                    f"Размер: {fav.unit.size}\n"
+                    f"Стоимость: {fav.unit.price}\n"
+                    f"Опыт: {fav.unit.exp}\n"
+                    f"Опыт за убийство: {fav.unit.exp_per_kill}\n"
+                    f"Здоровье: {fav.unit.health}\n"
+                    f"Броня: {fav.unit.armor}\n"
+                    f"Иммунитет: {fav.unit.immune}\n"
+                    f"Защита: {fav.unit.ward}\n"
+                    f"Атака: {fav.unit.attack_type}\n"
+                    f"Шанс попадания: {fav.unit.attack_chance}\n"
+                    f"Урон: {fav.unit.attack_dmg}\n"
+                    f"Периодический урон: {fav.unit.dot_dmg}\n"
+                    f"Источник атаки: {fav.unit.attack_source}\n"
+                    f"Инициатива: {fav.unit.attack_ini}\n"
+                    f"Радиус: {fav.unit.attack_radius}\n"
+                    f"Цели: {fav.unit.attack_purpose}\n"
+                    f"Атакует дважды: {fav.unit.attack_twice}\n"
+                    f"Предыдущая форма: {fav.unit.prev_level}\n",
+        )
+
+        pagination_btns = pages(paginator)
+
+        kbds = get_user_favourites(
+            level_menu=level_menu,
+            page=page,
+            pagination_btns=pagination_btns,
+            unit_id=fav.unit.id,
+        )
+
+    return image, kbds
+
+
 async def get_menu_content(
         session: AsyncSession,
         level_menu: int,
         menu_name: str,
         page: Optional[int] = None,
-        level_unit: int = None
+        level_unit: int = None,
+        user_id: Optional[int] = None,
+        unit_id: Optional[int] = None,
 ):
     if level_menu == 0:
         return await main_menu(session, level_menu, menu_name)
@@ -123,3 +195,10 @@ async def get_menu_content(
         return await catalog(session, level_menu, menu_name)
     if level_menu == 2:
         return await units(session, level_menu, page, level_unit)
+    if level_menu == 3:
+        return await favourites(session,
+                                level_menu,
+                                menu_name,
+                                page,
+                                user_id,
+                                unit_id)

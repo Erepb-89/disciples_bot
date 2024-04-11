@@ -21,7 +21,7 @@ def get_user_main_btns(*, level_menu: int, sizes: Tuple[int] = (2,)):
         "Об игре 🎮": "game",
         "О фракциях 🧩": "factions",
         # "Скриншоты 👓": "screenshots",
-        "Категории 🧻": "catalog",
+        "Категории 💪": "catalog",
     }
     for text, menu_name in btns.items():
         if menu_name == 'units':
@@ -54,6 +54,10 @@ def get_units_btns(
     keyboard.add(InlineKeyboardButton(text='Назад',
                                       callback_data=MenuCallBack(level_menu=level_menu - 1,
                                                                  menu_name='main').pack()))
+    keyboard.add(InlineKeyboardButton(text='Добавить в избранное ⭐',
+                                      callback_data=MenuCallBack(level_menu=level_menu,
+                                                                 menu_name='add_to_favs',
+                                                                 unit_id=unit_id).pack()))
 
     keyboard.adjust(*sizes)
 
@@ -95,3 +99,60 @@ def get_user_catalog_btns(*, level_menu: int, unit_levels: list, sizes: Tuple[in
                                                                      level_unit=level.id).pack()))
 
     return keyboard.adjust(*sizes).as_markup()
+
+
+def get_user_favourites(
+        *,
+        level_menu: int,
+        page: Optional[int] = None,
+        pagination_btns: Optional[dict] = None,
+        unit_id: Optional[int] = None,
+        sizes: Tuple[int] = (3,)
+):
+    keyboard = InlineKeyboardBuilder()
+    if page:
+        keyboard.add(InlineKeyboardButton(text='Удалить',
+                                          callback_data=MenuCallBack(
+                                              level_menu=level_menu,
+                                              menu_name='delete',
+                                              unit_id=unit_id,
+                                              page=page).pack()))
+
+        keyboard.adjust(*sizes)
+
+        row = []
+        for text, menu_name in pagination_btns.items():
+            if menu_name == "next":
+                row.append(InlineKeyboardButton(text=text,
+                                                callback_data=MenuCallBack(
+                                                    level_menu=level_menu,
+                                                    menu_name=menu_name,
+                                                    page=page + 1).pack()))
+            elif menu_name == "previous":
+                row.append(InlineKeyboardButton(text=text,
+                                                callback_data=MenuCallBack(
+                                                    level_menu=level_menu,
+                                                    menu_name=menu_name,
+                                                    page=page - 1).pack()))
+
+        keyboard.row(*row)
+
+        row2 = [
+            InlineKeyboardButton(text='На главную 🏠',
+                                 callback_data=MenuCallBack(
+                                     level_menu=0,
+                                     menu_name='main').pack())
+            # InlineKeyboardButton(text='Заказать',
+            #                      callback_data=MenuCallBack(
+            #                          level_menu=0,
+            #                          menu_name='order').pack()),
+        ]
+        return keyboard.row(*row2).as_markup()
+    else:
+        keyboard.add(
+            InlineKeyboardButton(text='На главную 🏠',
+                                 callback_data=MenuCallBack(
+                                     level_menu=0,
+                                     menu_name='main').pack()))
+
+        return keyboard.adjust(*sizes).as_markup()
