@@ -10,12 +10,15 @@ from database.orm_query import (
     orm_get_banner,
     orm_get_user_favs,
     orm_delete_from_favs,
+    orm_get_factions,
 )
 from keyboards.inline import (
     get_units_btns,
     get_user_main_btns,
     get_user_catalog_btns,
     get_user_favourites,
+    get_screens_btns,
+    get_user_factions_btns,
 )
 
 from utils.paginator import Paginator
@@ -114,6 +117,61 @@ async def catalog(session, level_menu, menu_name):
     return image, kbds
 
 
+async def factions(session, level_menu, menu_name):
+    banner = await orm_get_banner(session, menu_name)
+
+    image = InputMediaPhoto(media=FSInputFile(
+        os.path.join(os.getcwd(), f'screenshots/{banner.image}')),
+        caption=banner.description
+    )
+
+    factions_list = await orm_get_factions(session)
+    kbds = get_user_factions_btns(
+        level_menu=level_menu,
+        factions=factions_list,
+        menu_name=menu_name)
+
+    return image, kbds
+
+
+async def faction(session, level_menu, menu_name):
+    banner = await orm_get_banner(session, menu_name)
+
+    factions_list = await orm_get_factions(session)
+    kbds = get_user_factions_btns(
+        level_menu=level_menu,
+        factions=factions_list,
+        menu_name=menu_name)
+
+    image = InputMediaPhoto(media=FSInputFile(
+        os.path.join(os.getcwd(), f'screenshots/{menu_name}.png')),
+        caption=banner.description)
+
+    return image, kbds
+
+
+async def screenshots(level_menu, page):
+    screen_path = os.path.join(PARENT_DIR, 'screenshots')
+    screen_list = os.listdir(screen_path)
+
+    paginator = Paginator(screen_list, page=page)
+    screen = paginator.get_page()[0]
+
+    image = InputMediaPhoto(
+        media=FSInputFile(os.path.join(screen_path, screen)),
+        caption=f"<b>{screen}</b>\n\n")
+
+    pagination_btns = pages(paginator)
+
+    kbds = get_screens_btns(
+        level_menu=level_menu,
+        page=page,
+        pagination_btns=pagination_btns,
+    )
+
+    return image, kbds
+
+
 async def favourites(session, level_menu, menu_name, page, user_id, unit_id):
     if menu_name == "delete":
         await orm_delete_from_favs(session, user_id, unit_id)
@@ -202,3 +260,10 @@ async def get_menu_content(
                                 page,
                                 user_id,
                                 unit_id)
+    if level_menu == 4:
+        return await screenshots(level_menu,
+                                 page)
+    if level_menu == 5:
+        return await factions(session, level_menu, menu_name)
+    if level_menu == 6:
+        return await faction(session, level_menu, menu_name)
