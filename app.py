@@ -4,10 +4,8 @@ import os
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from aiogram.types import BotCommandScopeAllPrivateChats
 from dotenv import find_dotenv, load_dotenv
 
-from common.bot_cmds_list import private
 from database.engine import session_maker, create_db
 from handlers.admin_private import admin_router
 from handlers.user_private import user_private_router
@@ -43,7 +41,7 @@ async def main() -> None:
 
     await bot.delete_webhook(drop_pending_updates=True)
     # await bot.delete_my_commands(scope=BotCommandScopeAllPrivateChats())
-    await bot.set_my_commands(commands=private, scope=BotCommandScopeAllPrivateChats())
+    # await bot.set_my_commands(commands=private, scope=BotCommandScopeAllPrivateChats())
     await dp.start_polling(bot)
 
 
