@@ -9,7 +9,7 @@ from database.models import (
     UnitLevel,
     Banner,
     User,
-    Favourites,
+    Favourites, Faction,
 )
 
 
@@ -34,6 +34,21 @@ async def orm_create_unit_levels(session: AsyncSession, unit_levels: list):
     if result.first():
         return
     session.add_all([UnitLevel(level=level) for level in unit_levels])
+    await session.commit()
+
+
+async def orm_get_factions(session: AsyncSession):
+    query = select(Faction)
+    result = await session.execute(query)
+    return result.scalars().all()
+
+
+async def orm_create_factions(session: AsyncSession, factions: list):
+    query = select(Faction)
+    result = await session.execute(query)
+    if result.first():
+        return
+    session.add_all([Faction(name=faction) for faction in factions])
     await session.commit()
 
 

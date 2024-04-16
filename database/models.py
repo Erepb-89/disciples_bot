@@ -13,6 +13,13 @@ class UnitLevel(Base):
     level: Mapped[str] = mapped_column(String(10), nullable=False)
 
 
+class Faction(Base):
+    __tablename__ = 'faction'
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(20), nullable=False)
+
+
 class Banner(Base):
     __tablename__ = 'banner'
 
